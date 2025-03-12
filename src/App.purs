@@ -2,7 +2,8 @@ module App where
 
 import Prelude
 
-import Control.Monad.State (get, modify_)
+import Control.Monad.State (get, gets, modify_)
+import Control.Plus (empty)
 import Data.Array (mapWithIndex)
 import Data.Array as Array
 import Data.Generic.Rep (class Generic)
@@ -40,12 +41,8 @@ component_App = H.mkComponent { initialState, eval, render }
 
   eval = H.mkEval H.defaultEval { handleAction = handleAction }
 
-  handleAction (ViewOutput_AppAction vo) = do
-    H.tell (Proxy @"Engine") unit $ EngineQuery vo
-    H.tell (Proxy @"View") unit $ ConfirmViewQuery
-  handleAction (EngineOutput_AppAction eo) = do
-    H.tell (Proxy @"View") unit $ ViewQuery eo
-    H.tell (Proxy @"Engine") unit $ ConfirmEngineQuery
+  handleAction (ViewOutput_AppAction vo) = H.tell (Proxy @"Engine") unit $ EngineQuery vo
+  handleAction (EngineOutput_AppAction eo) = H.tell (Proxy @"View") unit $ ViewQuery eo
 
   render _ =
     HH.div []
@@ -57,11 +54,9 @@ component_App = H.mkComponent { initialState, eval, render }
 -- Engine
 --------------------------------------------------------------------------------
 
-data EngineQuery a
-  = EngineQuery ViewOutput a
-  | ConfirmEngineQuery a
+data EngineQuery a = EngineQuery ViewOutput a
 
-data EngineOutput = EngineOutput Int Boolean
+data EngineOutput = EngineOutput Int Int
 
 derive instance Generic EngineOutput _
 
@@ -70,18 +65,16 @@ instance Show EngineOutput where
 
 component_Engine = H.mkComponent { initialState, eval, render }
   where
-  initialState _ = { active_index: 0 }
+  initialState _ =
+    { active_index: 0
+    }
 
   eval = H.mkEval H.defaultEval
     { handleQuery = case _ of
         EngineQuery (ViewOutput active_index) a -> do
           { active_index: old_active_index } <- get
           modify_ _ { active_index = active_index }
-          H.raise $ EngineOutput old_active_index false
-          H.raise $ EngineOutput active_index true
-          pure $ pure a
-        ConfirmEngineQuery a -> do
-          -- TODO
+          H.raise $ EngineOutput old_active_index active_index
           pure $ pure a
     }
 
@@ -91,9 +84,8 @@ component_Engine = H.mkComponent { initialState, eval, render }
 -- View
 --------------------------------------------------------------------------------
 
-data ViewQuery a
-  = ViewQuery EngineOutput a
-  | ConfirmViewQuery a
+data ViewQuery a = ViewQuery EngineOutput a
+--   | ViewConfirm Confirm
 
 data ViewAction = ViewAction MouseEvent Int
 
@@ -106,18 +98,23 @@ instance Show ViewOutput where
 
 component_View = H.mkComponent { initialState, eval, render }
   where
-  initialState _ = { values: [ true ] <> Array.replicate 10 false }
+  initialState _ =
+    { values: [ true ] <> Array.replicate 10 false
+    }
 
   eval = H.mkEval H.defaultEval
     { handleQuery = case _ of
-        ViewQuery (EngineOutput i b) a -> do
+        ViewQuery (EngineOutput i1 i2) a -> do
           Aff.delay (Aff.Milliseconds 200.0) # liftAff
-          modify_ \state -> state { values = state.values # Array.modifyAt i (const b) # fromMaybe' \_ -> unsafeCrashWith "impossible" }
-          pure $ pure a
-        ConfirmViewQuery a -> do
-          -- TODO
+          modify_ \state -> state
+            { values =
+                state.values
+                  # Array.modifyAt i1 (const false) >>> fromMaybe' (\_ -> unsafeCrashWith "impossible")
+                  # Array.modifyAt i2 (const true) >>> fromMaybe' (\_ -> unsafeCrashWith "impossible")
+            }
           pure $ pure a
     , handleAction = \(ViewAction e i) -> do
+        Aff.delay (Aff.Milliseconds 200.0) # liftAff
         e # MouseEvent.toEvent # Event.stopPropagation # liftEffect
         H.raise $ ViewOutput i
     }

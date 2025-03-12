@@ -6712,26 +6712,30 @@
       handleQuery: function(v1) {
         return discard5(liftAff2(delay(200)))(function() {
           return discard5(modify_3(function(state3) {
-            var $81 = {};
-            for (var $82 in state3) {
-              if ({}.hasOwnProperty.call(state3, $82)) {
-                $81[$82] = state3[$82];
+            var $82 = {};
+            for (var $83 in state3) {
+              if ({}.hasOwnProperty.call(state3, $83)) {
+                $82[$83] = state3[$83];
               }
               ;
             }
             ;
-            $81.values = fromMaybe$prime(function(v3) {
+            $82.values = fromMaybe$prime(function(v3) {
               return unsafeCrashWith("impossible");
-            })(modifyAt(v1.value0.value0)($$const(v1.value0.value1))(state3.values));
-            return $81;
+            })(modifyAt(v1.value0.value1)($$const(true))(fromMaybe$prime(function(v3) {
+              return unsafeCrashWith("impossible");
+            })(modifyAt(v1.value0.value0)($$const(false))(state3.values))));
+            return $82;
           }))(function() {
             return pure9(pure13(v1.value1));
           });
         });
       },
       handleAction: function(v1) {
-        return discard5(liftEffect7(stopPropagation(toEvent(v1.value0))))(function() {
-          return raise(new ViewOutput(v1.value1));
+        return discard5(liftAff2(delay(200)))(function() {
+          return discard5(liftEffect7(stopPropagation(toEvent(v1.value0))))(function() {
+            return raise(new ViewOutput(v1.value1));
+          });
         });
       }
     });
@@ -6758,21 +6762,19 @@
       handleQuery: function(v1) {
         return bind5(get2)(function(v2) {
           return discard5(modify_3(function(v3) {
-            var $93 = {};
-            for (var $94 in v3) {
-              if ({}.hasOwnProperty.call(v3, $94)) {
-                $93[$94] = v3[$94];
+            var $94 = {};
+            for (var $95 in v3) {
+              if ({}.hasOwnProperty.call(v3, $95)) {
+                $94[$95] = v3[$95];
               }
               ;
             }
             ;
-            $93.active_index = v1.value0.value0;
-            return $93;
+            $94.active_index = v1.value0.value0;
+            return $94;
           }))(function() {
-            return discard5(raise(new EngineOutput(v2.active_index, false)))(function() {
-              return discard5(raise(new EngineOutput(v1.value0.value0, true)))(function() {
-                return pure9(pure13(v1.value1));
-              });
+            return discard5(raise(new EngineOutput(v2.active_index, v1.value0.value0)))(function() {
+              return pure9(pure13(v1.value1));
             });
           });
         });
@@ -6801,7 +6803,7 @@
         return tell22($$Proxy.value)(unit)(ViewQuery.create(v.value0));
       }
       ;
-      throw new Error("Failed pattern match at App (line 43, column 3 - line 43, column 90): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at App (line 44, column 3 - line 44, column 90): " + [v.constructor.name]);
     };
     var $$eval = mkEval({
       handleQuery: defaultEval.handleQuery,

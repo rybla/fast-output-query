@@ -1,0 +1,33 @@
+package:
+  name: fast-output-query
+  dependencies:
+    - aff-promise
+    - argonaut
+    - argonaut-generic
+    - arrays
+    - console
+    - debug
+    - effect
+    - either
+    - fetch
+    - halogen
+    - lists
+    - maybe
+    - node-child-process
+    - node-fs
+    - node-http
+    - prelude
+    - profunctor-lenses
+    - random
+    - record
+    - spec
+    - spec-node
+    - transformers
+    - variant
+  test:
+    main: Test.Main
+    dependencies: []
+workspace:
+  packageSet:
+    registry: 63.5.0
+  extraPackages: {}
